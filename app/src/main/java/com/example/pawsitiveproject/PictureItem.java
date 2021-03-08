@@ -24,4 +24,8 @@ public class PictureItem extends Object{
     public void setUrl(String url) {
         this.url = url;
     }
+
+    public String toString() {
+        return "ID: " + this.id + " - URL: " + this.url;
+    }
 }
