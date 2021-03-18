@@ -88,7 +88,15 @@ public class MainActivity extends AppCompatActivity {
         mReqQueue = Volley.newRequestQueue(this);
 
         image_queue = new ArrayList<PictureItem>();
-        PictureItem init_item = new PictureItem("duYK7C91Q", "https://cdn2.thedogapi.com/images/duYK7C91Q.jpg");
+        PictureItem init_item = new PictureItem(
+            "duYK7C91Q",
+            "https://cdn2.thedogapi.com/images/duYK7C91Q.jpg",
+            "Job",
+            "Job Category",
+            "Lifespan",
+            "Name",
+            "Temperament"
+        );
         image_queue.add(init_item);
         getRandomPicture();
 
@@ -247,12 +255,16 @@ public class MainActivity extends AppCompatActivity {
                         //Gets jsonObject at index i
                         JSONObject jsonObject = response.getJSONObject(i);
                         //gets date from jsonObject by key name
+                        Log.d("bsr", jsonObject.toString());
                         String id = jsonObject.getString("id");
                         String pictureUrl = jsonObject.getString("url");
-                        //Log.d("bsr", "url: " + pictureUrl);
-                        PictureItem newItem = new PictureItem(id, pictureUrl);
-                        //Log.d("bsr", "Adding new image to queue");
-                        //Log.d("bsr", newItem.toString());
+                        JSONArray breeds = jsonObject.getJSONArray("breeds");
+                        String job = breeds.getJSONObject(0).getString("bred_for");
+                        String job_category = breeds.getJSONObject(0).getString("breed_group");
+                        String lifespan = breeds.getJSONObject(0).getString("life_span");
+                        String name = breeds.getJSONObject(0).getString("name");
+                        String temperament = breeds.getJSONObject(0).getString("temperament");
+                        PictureItem newItem = new PictureItem(id, pictureUrl, job, job_category, lifespan, name, temperament);
                         image_queue.add(newItem);
                     } catch (JSONException je) {
                         Log.d("bsr", "JSON ERROR: " + je);
@@ -269,6 +281,15 @@ public class MainActivity extends AppCompatActivity {
                 Map<String, String> params = new HashMap<String, String>();
                 params.put("x-api-key", API_KEY);
                 //Log.d("bsr", "getHeaders");
+                return params;
+            }
+
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("sub_id", userId);
+                params.put("include_vote", "1");
+                params.put("include_favourite", "1");
                 return params;
             }
         };
@@ -367,8 +388,19 @@ public class MainActivity extends AppCompatActivity {
                 ImageView image_view = view.findViewById(R.id.swipe_picture);
                 Glide.with(MainActivity.this)
                         .load(displayItem.getUrl())
+                        .centerCrop()
                         .placeholder(R.drawable.ic_baseline_cached_24)
                         .into(image_view);
+                TextView name = view.findViewById(R.id.swipe_name);
+                TextView job = view.findViewById(R.id.swipe_job);
+                TextView job_category = view.findViewById(R.id.swipe_job_category);
+                TextView temperament = view.findViewById(R.id.swipe_temperament);
+                TextView lifespan = view.findViewById(R.id.swipe_lifespan);
+                name.setText(displayItem.getName());
+                job.setText(displayItem.getJob());
+                job_category.setText(displayItem.getJobCategory());
+                temperament.setText(displayItem.getTemperament());
+                lifespan.setText(displayItem.getLifespan());
             }
             return view;
         }

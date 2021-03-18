@@ -3,10 +3,20 @@ package com.example.pawsitiveproject;
 public class PictureItem extends Object{
     private String id;
     private String url;
+    private String job;
+    private String job_category;
+    private String lifespan;
+    private String name;
+    private String temperament;
 
-    public PictureItem(String id, String url) {
+    public PictureItem(String id, String url, String job, String job_category, String lifespan, String name, String temperament) {
         this.id = id;
         this.url = url;
+        this.job = job;
+        this.job_category = job_category;
+        this.lifespan = lifespan;
+        this.name = name;
+        this.temperament = temperament;
     }
 
     public String getId() {
@@ -25,7 +35,49 @@ public class PictureItem extends Object{
         this.url = url;
     }
 
+    public String getJob() {
+        return this.job;
+    }
+
+    public void setJob(String job) {
+        this.job = job;
+    }
+
+    public String getJobCategory() {
+        return this.job_category;
+    }
+
+    public void setJobCategory(String job_category) {
+        this.job_category = job_category;
+    }
+
+    public String getLifespan() {
+        return this.lifespan;
+    }
+
+    public void setLifespan(String lifespan) {
+        this.lifespan = lifespan;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getTemperament() {
+        return this.temperament;
+    }
+
+    public void setTemperament(String temperament) {
+        this.temperament = temperament;
+    }
+
     public String toString() {
-        return "ID: " + this.id + " - URL: " + this.url;
+        return "ID: " + this.id + " - URL: " + this.url + " - Job: " + this.job +
+                " - Job Category: " +  this.job_category + " - Lifespan: " + this.lifespan +
+                " - Name: " + this.name + " - Temperament: " + this.temperament;
     }
 }
