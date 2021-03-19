@@ -1,0 +1,289 @@
+package com.example.pawsitiveproject;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+import com.bumptech.glide.Glide;
+import com.google.gson.Gson;
+import com.lorentzos.flingswipe.SwipeFlingAdapterView;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+public class HomeFragment extends Fragment {
+    private final String API_KEY = "2fc6b7da-314a-4327-9888-0fd52d813f7f";
+    private final String tag = "api-req";
+
+    private ArrayList<PictureItem> image_queue;
+    private SwipeAdapter swipeAdapter;
+    private SwipeFlingAdapterView flingContainer;
+    private SharedPreferences sharedPreferences;
+    private RequestQueue mReqQueue;
+    private View view;
+
+    private String userId;
+    private Boolean firstPicture = true;
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        Log.d("bsr", "OnCreateView");
+        return inflater.inflate(R.layout.fragment_home, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        this.view = view;
+        mReqQueue = Volley.newRequestQueue(this.getContext());
+
+        image_queue = new ArrayList<PictureItem>();
+        getRandomPicture();
+
+        flingContainer = (SwipeFlingAdapterView) view.findViewById(R.id.swipe_picture_frame);
+        swipeAdapter = new SwipeAdapter(this.getContext(), R.layout.picture_item, image_queue);
+        flingContainer.setAdapter(swipeAdapter);
+        flingContainer.setFlingListener(new SwipeFlingAdapterView.onFlingListener() {
+            @Override
+            public void removeFirstObjectInAdapter() {
+                //Log.d("bsr", "removeFirstObject");
+                image_queue.remove(0);
+                swipeAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onLeftCardExit(Object o) {
+                Log.d("bsr", "<---swipe left--- == downvote");
+                PictureItem item = (PictureItem)o;
+                postNewVote(0, item.getId());
+            }
+
+            @Override
+            public void onRightCardExit(Object o) {
+                Log.d("bsr", "---swipe right---> == upvote");
+                PictureItem item = (PictureItem)o;
+                postNewVote(1, item.getId());
+            }
+
+            @Override
+            public void onAdapterAboutToEmpty(int i) {
+                //Log.d("bsr", "AdapterAboutToEmpty");
+                getRandomPicture();
+                swipeAdapter.notifyDataSetChanged();
+
+            }
+
+            @Override
+            public void onScroll(float v) {
+                //Log.d("bsr", "onScroll");
+            }
+        });
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
+    private void getRandomPicture() {
+        String url = "https://api.thedogapi.com/v1/images/search?mime_types=jpg,png";
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url,
+            response -> {
+                Gson gson = new Gson();
+                JSONObject jsonObject = null;
+                String string = null;
+                try {
+                    jsonObject = response.getJSONObject(0);
+                    string = jsonObject.toString();
+                } catch (JSONException je) {
+                    Log.e("bsr", "JSON ERROR: " + je);
+                }
+                RandomImageResponse imageResponse = gson.fromJson(string, RandomImageResponse.class);
+
+                final String placeholder = "N/A";
+                String bred_for = placeholder;
+                String breed_group = placeholder;
+                String name  = placeholder;
+                String lifespan = placeholder;
+                String temperament = placeholder;
+
+                if (imageResponse.getBreeds().size() > 0) {
+                    bred_for = imageResponse.getBreeds().get(0).getBred_for();
+                    breed_group = imageResponse.getBreeds().get(0).getBreed_group();
+                    lifespan = imageResponse.getBreeds().get(0).getLifespan();
+                    name = imageResponse.getBreeds().get(0).getName();
+                    temperament = imageResponse.getBreeds().get(0).getTemperament();
+                }
+
+                PictureItem newItem = new PictureItem(
+                            imageResponse.getId(),
+                            imageResponse.getUrl(),
+                            bred_for,
+                            breed_group,
+                            lifespan,
+                            name,
+                            temperament
+                );
+                Log.d("bsr", newItem.toString());
+                image_queue.add(newItem);
+                swipeAdapter.notifyDataSetChanged();
+            },
+            error -> {
+                Log.d("bsr", "RESPONSE ERROR: " + error.toString());
+            }
+        ) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("x-api-key", API_KEY);
+                //Log.d("bsr", "getHeaders");
+                return params;
+            }
+
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("sub_id", userId);
+                params.put("include_vote", "1");
+                params.put("include_favourite", "1");
+                return params;
+            }
+        };
+
+        jsonArrayRequest.setTag(tag);
+        mReqQueue.add(jsonArrayRequest);
+    }
+
+    private void postNewVote(int vote, String pic_id) {
+        String url = "https://api.thedogapi.com/v1/votes";
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("image_id", pic_id);
+            jsonObject.put("sub_id", userId);
+            jsonObject.put("value", vote);
+        } catch (JSONException je) {
+            Log.d("bsr", "POST BODY ERROR: " + je);
+        }
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, jsonObject,
+                response -> {
+                    Log.d("bsr", response.toString());
+                }, error -> {
+            Log.d("bsr", "RESPONSE ERROR: " + error.toString());
+        }
+        ) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("x-api-key", API_KEY);
+                params.put("Content-Type", "application/json");
+                //Log.d("bsr", "getHeaders");
+                return params;
+            }
+        };
+        jsonObjectRequest.setTag(tag);
+        mReqQueue.add(jsonObjectRequest);
+    }
+
+    private void getAllBreeds() {
+        String url = "https://api.thedogapi.com/v1/breeds?api_key=" + API_KEY;
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url,
+                response -> {
+                    //Iterates through elements in response array and displays in TextView
+                    for (int i = 0; i < response.length(); i++){
+                        try {
+                            //Gets jsonObject at index i
+                            JSONObject jsonObject = response.getJSONObject(i);
+
+                            //gets date from jsonObject by key name
+                            String id = jsonObject.getString("id");
+                            String name = jsonObject.getString("name");
+                        } catch (JSONException je) {
+                            Log.d("bsr", "JSON ERROR: " + je);
+                        }
+                    }
+                }, error -> {
+            // On error in parsing logs the error
+            Log.d("bsr", "RESPONSE ERROR: " + error.toString());
+        }
+        );
+
+        jsonArrayRequest.setTag(tag);
+        mReqQueue.add(jsonArrayRequest);
+    }
+
+    private class SwipeAdapter extends ArrayAdapter<PictureItem> {
+        private ArrayList<PictureItem> picture_items;
+
+        public SwipeAdapter(Context context, int textViewResourceId, ArrayList<PictureItem> picture_items) {
+            super(context, textViewResourceId, picture_items);
+            this.picture_items = picture_items;
+        }
+
+        @Override
+        public int getCount() {
+            return picture_items.size();
+        }
+
+        @Nullable
+        @Override
+        public PictureItem getItem(int position) {
+            return picture_items.get(position);
+        }
+
+        @NonNull
+        @Override
+        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+            View view = convertView;
+            if (view == null) {
+                LayoutInflater viewInflater = (LayoutInflater)getLayoutInflater();
+                view = viewInflater.inflate(R.layout.picture_item, parent, false);
+            }
+            PictureItem displayItem = getItem(position);
+            if (displayItem != null) {
+                ImageView image_view = view.findViewById(R.id.swipe_picture);
+                Glide.with(this.getContext())
+                        .load(displayItem.getUrl())
+                        .centerCrop()
+                        .placeholder(R.drawable.ic_baseline_cached_24)
+                        .into(image_view);
+                TextView name = view.findViewById(R.id.swipe_name);
+                TextView job = view.findViewById(R.id.swipe_job);
+                TextView job_category = view.findViewById(R.id.swipe_job_category);
+                TextView temperament = view.findViewById(R.id.swipe_temperament);
+                TextView lifespan = view.findViewById(R.id.swipe_lifespan);
+                name.setText(displayItem.getName());
+                job.setText(displayItem.getJob());
+                job_category.setText(displayItem.getJobCategory());
+                temperament.setText(displayItem.getTemperament());
+                lifespan.setText(displayItem.getLifespan());
+            }
+            return view;
+        }
+    }
+}

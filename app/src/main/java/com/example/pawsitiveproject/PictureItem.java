@@ -75,9 +75,16 @@ public class PictureItem extends Object{
         this.temperament = temperament;
     }
 
+    @Override
     public String toString() {
-        return "ID: " + this.id + " - URL: " + this.url + " - Job: " + this.job +
-                " - Job Category: " +  this.job_category + " - Lifespan: " + this.lifespan +
-                " - Name: " + this.name + " - Temperament: " + this.temperament;
+        return "PictureItem{" +
+                "id='" + id + '\'' +
+                ", url='" + url + '\'' +
+                ", job='" + job + '\'' +
+                ", job_category='" + job_category + '\'' +
+                ", lifespan='" + lifespan + '\'' +
+                ", name='" + name + '\'' +
+                ", temperament='" + temperament + '\'' +
+                '}';
     }
 }

@@ -4,6 +4,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
+import androidx.navigation.ui.NavigationUI;
 
 import android.content.Context;
 import android.content.Intent;
@@ -39,6 +42,7 @@ import com.firebase.ui.auth.IdpResponse;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -67,11 +71,8 @@ public class MainActivity extends AppCompatActivity {
     private static final int RC_SIGN_IN = 123;
     private String userId;
 
-    private ArrayList<PictureItem> image_queue;
-    private SwipeAdapter swipeAdapter;
-    private SwipeFlingAdapterView flingContainer;
-    private SharedPreferences sharedPreferences;
     private Toolbar toolbar;
+    private NavController navController;
 
     private FirebaseUser user;
     private FirebaseDatabase database;
@@ -83,61 +84,22 @@ public class MainActivity extends AppCompatActivity {
 
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        BottomNavigationView bottom_nav = findViewById(R.id.bottom_nav);
+        NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_controller);
+        navController = navHostFragment.getNavController();
+        NavigationUI.setupWithNavController(bottom_nav, navController);
+        NavigationUI.setupActionBarWithNavController(this, navController);
+
         signIn();
 
-        mReqQueue = Volley.newRequestQueue(this);
 
-        image_queue = new ArrayList<PictureItem>();
-        PictureItem init_item = new PictureItem(
-            "duYK7C91Q",
-            "https://cdn2.thedogapi.com/images/duYK7C91Q.jpg",
-            "Job",
-            "Job Category",
-            "Lifespan",
-            "Name",
-            "Temperament"
-        );
-        image_queue.add(init_item);
-        getRandomPicture();
+    }
 
-        flingContainer = (SwipeFlingAdapterView) findViewById(R.id.swipe_picture_frame);
-        swipeAdapter = new SwipeAdapter(MainActivity.this, R.layout.picture_item, image_queue);
-        flingContainer.setAdapter(swipeAdapter);
-        flingContainer.setFlingListener(new SwipeFlingAdapterView.onFlingListener() {
-            @Override
-            public void removeFirstObjectInAdapter() {
-                //Log.d("bsr", "removeFirstObject");
-                image_queue.remove(0);
-                swipeAdapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onLeftCardExit(Object o) {
-                Log.d("bsr", "<---swipe left--- == downvote");
-                PictureItem item = (PictureItem)o;
-                postNewVote(0, item.getId());
-            }
-
-            @Override
-            public void onRightCardExit(Object o) {
-                Log.d("bsr", "---swipe right---> == upvote");
-                PictureItem item = (PictureItem)o;
-                postNewVote(1, item.getId());
-            }
-
-            @Override
-            public void onAdapterAboutToEmpty(int i) {
-                //Log.d("bsr", "AdapterAboutToEmpty");
-                getRandomPicture();
-                swipeAdapter.notifyDataSetChanged();
-
-            }
-
-            @Override
-            public void onScroll(float v) {
-                //Log.d("bsr", "onScroll");
-            }
-        });
+    @Override
+    public boolean onSupportNavigateUp() {
+        Log.d("bsr", "onSupportNavigateUp");
+        return navController.navigateUp();
     }
 
     private void signIn() {
@@ -244,165 +206,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void getRandomPicture() {
-        String url = "https://api.thedogapi.com/v1/images/search?mime_types=jpg,png";
-        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url,
-            response -> {
-                //Iterates through elements in response array and displays in TextView
-                //Log.d("bsr", response.toString());
-                for (int i = 0; i < response.length(); i++){
-                    try {
-                        //Gets jsonObject at index i
-                        JSONObject jsonObject = response.getJSONObject(i);
-                        //gets date from jsonObject by key name
-                        Log.d("bsr", jsonObject.toString());
-                        String id = jsonObject.getString("id");
-                        String pictureUrl = jsonObject.getString("url");
-                        JSONArray breeds = jsonObject.getJSONArray("breeds");
-                        String job = breeds.getJSONObject(0).getString("bred_for");
-                        String job_category = breeds.getJSONObject(0).getString("breed_group");
-                        String lifespan = breeds.getJSONObject(0).getString("life_span");
-                        String name = breeds.getJSONObject(0).getString("name");
-                        String temperament = breeds.getJSONObject(0).getString("temperament");
-                        PictureItem newItem = new PictureItem(id, pictureUrl, job, job_category, lifespan, name, temperament);
-                        image_queue.add(newItem);
-                    } catch (JSONException je) {
-                        Log.d("bsr", "JSON ERROR: " + je);
-                    }
-                }
-            }, error -> {
-                // On error in parsing logs the error
-                Log.d("bsr", "RESPONSE ERROR: " + error.toString());
-            }
-
-        ) {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("x-api-key", API_KEY);
-                //Log.d("bsr", "getHeaders");
-                return params;
-            }
-
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("sub_id", userId);
-                params.put("include_vote", "1");
-                params.put("include_favourite", "1");
-                return params;
-            }
-        };
-
-        jsonArrayRequest.setTag(tag);
-        mReqQueue.add(jsonArrayRequest);
-    }
-
-    private void postNewVote(int vote, String pic_id) {
-        String url = "https://api.thedogapi.com/v1/votes";
-        JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put("image_id", pic_id);
-            jsonObject.put("sub_id", userId);
-            jsonObject.put("value", vote);
-        } catch (JSONException je) {
-            Log.d("bsr", "POST BODY ERROR: " + je);
-        }
-
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, jsonObject,
-                response -> {
-                    Log.d("bsr", response.toString());
-                }, error -> {
-                    Log.d("bsr", "RESPONSE ERROR: " + error.toString());
-                }
-        ) {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("x-api-key", API_KEY);
-                params.put("Content-Type", "application/json");
-                //Log.d("bsr", "getHeaders");
-                return params;
-            }
-        };
-        jsonObjectRequest.setTag(tag);
-        mReqQueue.add(jsonObjectRequest);
-    }
-
-    private void getAllBreeds() {
-        String url = "https://api.thedogapi.com/v1/breeds?api_key=" + API_KEY;
-        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url,
-                response -> {
-                    //Iterates through elements in response array and displays in TextView
-                    for (int i = 0; i < response.length(); i++){
-                        try {
-                            //Gets jsonObject at index i
-                            JSONObject jsonObject = response.getJSONObject(i);
-
-                            //gets date from jsonObject by key name
-                            String id = jsonObject.getString("id");
-                            String name = jsonObject.getString("name");
-                        } catch (JSONException je) {
-                            Log.d("bsr", "JSON ERROR: " + je);
-                        }
-                    }
-                }, error -> {
-            // On error in parsing logs the error
-            Log.d("bsr", "RESPONSE ERROR: " + error.toString());
-        }
-        );
-
-        jsonArrayRequest.setTag(tag);
-        mReqQueue.add(jsonArrayRequest);
-    }
-
-    private class SwipeAdapter extends ArrayAdapter<PictureItem> {
-        private ArrayList<PictureItem> picture_items;
-
-        public SwipeAdapter(Context context, int textViewResourceId, ArrayList<PictureItem> picture_items) {
-            super(context, textViewResourceId, picture_items);
-            this.picture_items = picture_items;
-        }
-
-        @Override
-        public int getCount() {
-            return picture_items.size();
-        }
-
-        @Nullable
-        @Override
-        public PictureItem getItem(int position) {
-            return picture_items.get(position);
-        }
-
-        @NonNull
-        @Override
-        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-            View view = convertView;
-            if (view == null) {
-                LayoutInflater viewInflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                view = viewInflater.inflate(R.layout.picture_item, parent, false);
-            }
-            PictureItem displayItem = getItem(position);
-            if (displayItem != null) {
-                ImageView image_view = view.findViewById(R.id.swipe_picture);
-                Glide.with(MainActivity.this)
-                        .load(displayItem.getUrl())
-                        .centerCrop()
-                        .placeholder(R.drawable.ic_baseline_cached_24)
-                        .into(image_view);
-                TextView name = view.findViewById(R.id.swipe_name);
-                TextView job = view.findViewById(R.id.swipe_job);
-                TextView job_category = view.findViewById(R.id.swipe_job_category);
-                TextView temperament = view.findViewById(R.id.swipe_temperament);
-                TextView lifespan = view.findViewById(R.id.swipe_lifespan);
-                name.setText(displayItem.getName());
-                job.setText(displayItem.getJob());
-                job_category.setText(displayItem.getJobCategory());
-                temperament.setText(displayItem.getTemperament());
-                lifespan.setText(displayItem.getLifespan());
-            }
-            return view;
-        }
+    public String getUserId() {
+        return this.userId;
     }
 }
