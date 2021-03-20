@@ -63,19 +63,11 @@ import java.util.Map;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
-    private final String ALLOWED_CHARACTERS ="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-";
     private final String tag = "api-req";
-    private Boolean firstPicture = true;
     private RequestQueue mReqQueue;
-    private final String API_KEY = "2fc6b7da-314a-4327-9888-0fd52d813f7f";
-    private static final int RC_SIGN_IN = 123;
-    private String userId;
 
     private Toolbar toolbar;
     private NavController navController;
-
-    private FirebaseUser user;
-    private FirebaseDatabase database;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,83 +82,12 @@ public class MainActivity extends AppCompatActivity {
         navController = navHostFragment.getNavController();
         NavigationUI.setupWithNavController(bottom_nav, navController);
         NavigationUI.setupActionBarWithNavController(this, navController);
-
-        signIn();
-
-
     }
 
     @Override
     public boolean onSupportNavigateUp() {
         Log.d("bsr", "onSupportNavigateUp");
         return navController.navigateUp();
-    }
-
-    private void signIn() {
-        // Initialize Firebase Auth and check if the user is signed in
-        List<AuthUI.IdpConfig> providers = Arrays.asList(
-                new AuthUI.IdpConfig.EmailBuilder().build(),
-                //new AuthUI.IdpConfig.PhoneBuilder().build(),
-                new AuthUI.IdpConfig.GoogleBuilder().build()
-                //new AuthUI.IdpConfig.FacebookBuilder().build(),
-                //new AuthUI.IdpConfig.TwitterBuilder().build()
-        );
-
-        // Create and launch sign-in intent
-        startActivityForResult(
-                AuthUI.getInstance()
-                        .createSignInIntentBuilder()
-                        .setAvailableProviders(providers)
-                        .build(),
-                RC_SIGN_IN
-        );
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == RC_SIGN_IN) {
-            IdpResponse response = IdpResponse.fromResultIntent(data);
-            if (resultCode == RESULT_OK) {
-                // Successfully signed in
-                user = FirebaseAuth.getInstance().getCurrentUser();
-                database = FirebaseDatabase.getInstance();
-                DatabaseReference myRef = database.getReference();
-
-                myRef.child("users").child(user.getUid()).child("userID").get().addOnCompleteListener(task -> {
-                    if (!task.isSuccessful()) {
-                        Random random=new Random();
-                        StringBuilder sb=new StringBuilder(10);
-                        for(int i=0;i<10;++i)
-                            sb.append(ALLOWED_CHARACTERS.charAt(random.nextInt(ALLOWED_CHARACTERS.length())));
-                        String uniqueId = sb.toString();
-                        userId = uniqueId;
-                        Log.d("bsr", "Setting: " + userId);
-                        myRef.child("users").child(user.getUid()).child("userID").setValue(userId);
-                    }
-                    else {
-                        Log.d("bsr", "DB UserId  == " + String.valueOf(task.getResult().getValue()));
-                        userId = String.valueOf(task.getResult().getValue());
-                    }
-                });
-                Log.d("bsr", user.getEmail());
-                myRef.child("users").child(user.getUid()).child("email").get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DataSnapshot> task) {
-                        if (!task.isSuccessful()) {
-                            Log.d("bsr", "Setting: " + user.getEmail());
-                            myRef.child("users").child(user.getUid()).child("email").setValue(user.getEmail());
-                        }
-                        else {
-                            Log.d("bsr", "DB Email == " + String.valueOf(task.getResult().getValue()));
-                        }
-                    }
-                });
-            } else {
-                Toast.makeText(this, "Error while trying to login", Toast.LENGTH_SHORT).show();
-            }
-        }
     }
 
     @Override
@@ -179,14 +100,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.tb_logout) {
-            AuthUI.getInstance()
-                .signOut(this)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    public void onComplete(@NonNull Task<Void> task) {
-                        user = null;
-                        signIn();
-                    }
-                });
+            FirebaseAuth.getInstance().signOut();
+            startActivity(new Intent(this, LoginActivity.class));
         }
         return super.onOptionsItemSelected(item);
     }
@@ -204,9 +119,5 @@ public class MainActivity extends AppCompatActivity {
         if (mReqQueue != null){
             mReqQueue.cancelAll(tag);
         }
-    }
-
-    public String getUserId() {
-        return this.userId;
     }
 }

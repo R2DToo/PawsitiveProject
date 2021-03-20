@@ -23,6 +23,8 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.gson.Gson;
 import com.lorentzos.flingswipe.SwipeFlingAdapterView;
 
@@ -45,14 +47,19 @@ public class HomeFragment extends Fragment {
     private RequestQueue mReqQueue;
     private View view;
 
-    private String userId;
     private Boolean firstPicture = true;
+
+    private FirebaseAuth mAuth;
+    private FirebaseUser currentUser;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         Log.d("bsr", "OnCreateView");
+        mAuth = FirebaseAuth.getInstance();
+        currentUser = mAuth.getCurrentUser();
+        Log.d("bsr", "Current UID == " + currentUser.getUid());
         return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
@@ -111,7 +118,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void getRandomPicture() {
-        String url = "https://api.thedogapi.com/v1/images/search?mime_types=jpg,png";
+        String url = "https://api.thedogapi.com/v1/images/search?mime_types=jpg,png&sub_id=" + currentUser.getUid();
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url,
             response -> {
                 Gson gson = new Gson();
@@ -161,16 +168,7 @@ public class HomeFragment extends Fragment {
             public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String, String> params = new HashMap<String, String>();
                 params.put("x-api-key", API_KEY);
-                //Log.d("bsr", "getHeaders");
-                return params;
-            }
-
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("sub_id", userId);
-                params.put("include_vote", "1");
-                params.put("include_favourite", "1");
+                Log.d("bsr", "getHeaders");
                 return params;
             }
         };
@@ -184,7 +182,7 @@ public class HomeFragment extends Fragment {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("image_id", pic_id);
-            jsonObject.put("sub_id", userId);
+            jsonObject.put("sub_id", currentUser.getUid());
             jsonObject.put("value", vote);
         } catch (JSONException je) {
             Log.d("bsr", "POST BODY ERROR: " + je);
