@@ -63,7 +63,7 @@ import java.util.Map;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
-    private final String tag = "api-req";
+    private final String TAG = "api-req";
     private RequestQueue mReqQueue;
 
     private Toolbar toolbar;
@@ -114,10 +114,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-
+        RequestQueue queue = SharedRequestQueue.getInstance(this).getRequestQueue();
         // if queue is not empty cancels all the requests with given tag
-        if (mReqQueue != null){
-            mReqQueue.cancelAll(tag);
+        if (queue != null){
+            queue.cancelAll(TAG);
         }
     }
 }

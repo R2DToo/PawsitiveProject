@@ -46,7 +46,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     @Override
     public void onStart() {
         super.onStart();
-        // Check if user is signed in (non-null) and update UI accordingly.
+        //Checks if the user was previously logged in. If they were, then start the main activity.
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if(currentUser != null){
             startActivity(new Intent(this, MainActivity.class));
@@ -65,6 +65,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
+    /**
+     * This login method will validate all user inputs, then sign in with the provided credentials.
+     */
     public void login() {
         String email = et_email.getText().toString();
         String password = et_password.getText().toString();
@@ -80,11 +83,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         }
 
         Pattern spacePattern = Pattern.compile(" ", Pattern.CASE_INSENSITIVE);
-        /*Matcher emailMatcher = spacePattern.matcher(email);
-        boolean emailContainsSpaces = emailMatcher.find();
-        if (emailContainsSpaces) {
-            et_email.setError("No spaces allowed");
-        }*/
 
         Matcher passwordMatcher = spacePattern.matcher(password);
         boolean passwordContainsSpaces = passwordMatcher.find();
@@ -100,14 +98,14 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this, task -> {
             if (task.isSuccessful()) {
-                // Sign in success, update UI with the signed-in user's information
+                // Sign in success
                 Log.d("bsr", "signInWithEmail:success");
                 FirebaseUser user = mAuth.getCurrentUser();
                 if(user != null){
                     startActivity(new Intent(LoginActivity.this, MainActivity.class));
                 }
             } else {
-                // If sign in fails, display a message to the user.
+                // Sign in fails, display a message to the user.
                 Log.d("bsr", "signInWithEmail:failure", task.getException());
             }
         });

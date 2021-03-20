@@ -38,13 +38,12 @@ import java.util.Map;
 
 public class HomeFragment extends Fragment {
     private final String API_KEY = "2fc6b7da-314a-4327-9888-0fd52d813f7f";
-    private final String tag = "api-req";
+    private final String TAG = "api-req";
 
     private ArrayList<PictureItem> image_queue;
     private SwipeAdapter swipeAdapter;
     private SwipeFlingAdapterView flingContainer;
     private SharedPreferences sharedPreferences;
-    private RequestQueue mReqQueue;
     private View view;
 
     private Boolean firstPicture = true;
@@ -67,7 +66,6 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         this.view = view;
-        mReqQueue = Volley.newRequestQueue(this.getContext());
 
         image_queue = new ArrayList<PictureItem>();
         getRandomPicture();
@@ -173,8 +171,8 @@ public class HomeFragment extends Fragment {
             }
         };
 
-        jsonArrayRequest.setTag(tag);
-        mReqQueue.add(jsonArrayRequest);
+        jsonArrayRequest.setTag(TAG);
+        SharedRequestQueue.getInstance(this.getContext()).addToRequestQueue(jsonArrayRequest);
     }
 
     private void postNewVote(int vote, String pic_id) {
@@ -204,8 +202,8 @@ public class HomeFragment extends Fragment {
                 return params;
             }
         };
-        jsonObjectRequest.setTag(tag);
-        mReqQueue.add(jsonObjectRequest);
+        jsonObjectRequest.setTag(TAG);
+        SharedRequestQueue.getInstance(this.getContext()).addToRequestQueue(jsonObjectRequest);
     }
 
     private void getAllBreeds() {
@@ -231,8 +229,8 @@ public class HomeFragment extends Fragment {
         }
         );
 
-        jsonArrayRequest.setTag(tag);
-        mReqQueue.add(jsonArrayRequest);
+        jsonArrayRequest.setTag(TAG);
+        SharedRequestQueue.getInstance(this.getContext()).addToRequestQueue(jsonArrayRequest);
     }
 
     private class SwipeAdapter extends ArrayAdapter<PictureItem> {
