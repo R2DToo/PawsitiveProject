@@ -6,9 +6,8 @@
     tools:context=".HomeFragment"
     android:orientation="vertical">
 
-    <TextView
+    <ListView
+        android:id="@+id/vote_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="Votes Fragment"
-        android:textSize="30sp"/>
+        android:layout_height="match_parent"/>
 </LinearLayout>
