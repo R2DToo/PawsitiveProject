@@ -55,10 +55,8 @@ public class HomeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        Log.d("bsr", "OnCreateView");
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
-        Log.d("bsr", "Current UID == " + currentUser.getUid());
         return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
@@ -69,6 +67,8 @@ public class HomeFragment extends Fragment {
 
         image_queue = new ArrayList<PictureItem>();
         getRandomPicture();
+        getRandomPicture();
+        getRandomPicture();
 
         flingContainer = (SwipeFlingAdapterView) view.findViewById(R.id.swipe_picture_frame);
         swipeAdapter = new SwipeAdapter(this.getContext(), R.layout.picture_item, image_queue);
@@ -76,37 +76,29 @@ public class HomeFragment extends Fragment {
         flingContainer.setFlingListener(new SwipeFlingAdapterView.onFlingListener() {
             @Override
             public void removeFirstObjectInAdapter() {
-                //Log.d("bsr", "removeFirstObject");
                 image_queue.remove(0);
                 swipeAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onLeftCardExit(Object o) {
-                Log.d("bsr", "<---swipe left--- == downvote");
                 PictureItem item = (PictureItem)o;
                 postNewVote(0, item.getId());
             }
 
             @Override
             public void onRightCardExit(Object o) {
-                Log.d("bsr", "---swipe right---> == upvote");
                 PictureItem item = (PictureItem)o;
                 postNewVote(1, item.getId());
             }
 
             @Override
             public void onAdapterAboutToEmpty(int i) {
-                //Log.d("bsr", "AdapterAboutToEmpty");
                 getRandomPicture();
-                swipeAdapter.notifyDataSetChanged();
-
             }
 
             @Override
-            public void onScroll(float v) {
-                //Log.d("bsr", "onScroll");
-            }
+            public void onScroll(float v) {}
         });
     }
 
@@ -154,7 +146,6 @@ public class HomeFragment extends Fragment {
                             name,
                             temperament
                 );
-                Log.d("bsr", newItem.toString());
                 image_queue.add(newItem);
                 swipeAdapter.notifyDataSetChanged();
             },
@@ -166,7 +157,6 @@ public class HomeFragment extends Fragment {
             public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String, String> params = new HashMap<String, String>();
                 params.put("x-api-key", API_KEY);
-                Log.d("bsr", "getHeaders");
                 return params;
             }
         };
@@ -188,49 +178,21 @@ public class HomeFragment extends Fragment {
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, jsonObject,
                 response -> {
-                    Log.d("bsr", response.toString());
+                    //Log.d("bsr", response.toString());
                 }, error -> {
-            Log.d("bsr", "RESPONSE ERROR: " + error.toString());
-        }
+                    Log.d("bsr", "RESPONSE ERROR: " + error.toString());
+                }
         ) {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String, String> params = new HashMap<String, String>();
                 params.put("x-api-key", API_KEY);
                 params.put("Content-Type", "application/json");
-                //Log.d("bsr", "getHeaders");
                 return params;
             }
         };
         jsonObjectRequest.setTag(TAG);
         SharedRequestQueue.getInstance(this.getContext()).addToRequestQueue(jsonObjectRequest);
-    }
-
-    private void getAllBreeds() {
-        String url = "https://api.thedogapi.com/v1/breeds?api_key=" + API_KEY;
-        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url,
-                response -> {
-                    //Iterates through elements in response array and displays in TextView
-                    for (int i = 0; i < response.length(); i++){
-                        try {
-                            //Gets jsonObject at index i
-                            JSONObject jsonObject = response.getJSONObject(i);
-
-                            //gets date from jsonObject by key name
-                            String id = jsonObject.getString("id");
-                            String name = jsonObject.getString("name");
-                        } catch (JSONException je) {
-                            Log.d("bsr", "JSON ERROR: " + je);
-                        }
-                    }
-                }, error -> {
-            // On error in parsing logs the error
-            Log.d("bsr", "RESPONSE ERROR: " + error.toString());
-        }
-        );
-
-        jsonArrayRequest.setTag(TAG);
-        SharedRequestQueue.getInstance(this.getContext()).addToRequestQueue(jsonArrayRequest);
     }
 
     private class SwipeAdapter extends ArrayAdapter<PictureItem> {

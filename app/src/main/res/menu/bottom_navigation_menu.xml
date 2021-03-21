@@ -1,5 +1,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
+        android:id="@+id/nav_upload"
+        android:enabled="true"
+        android:icon="@drawable/baseline_upload_file_black_24dp"
+        android:title="Upload"/>
+    <item
         android:id="@+id/nav_home"
         android:enabled="true"
         android:icon="@drawable/ic_baseline_home_24"
@@ -9,4 +14,9 @@
         android:enabled="true"
         android:icon="@drawable/ic_baseline_ballot_24"
         android:title="Votes"/>
+    <item
+        android:id="@+id/nav_friends"
+        android:enabled="true"
+        android:icon="@drawable/ic_baseline_group_24"
+        android:title="Friends"/>
 </menu>

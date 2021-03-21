@@ -6,6 +6,12 @@
     app:startDestination="@id/nav_home">
 
     <fragment
+        android:id="@+id/nav_upload"
+        android:label="Upload">
+
+    </fragment>
+
+    <fragment
         android:id="@+id/nav_home"
         android:name="com.example.pawsitiveproject.HomeFragment"
         android:label="Home"
@@ -24,6 +30,14 @@
         android:name="com.example.pawsitiveproject.VotesFragment"
         android:label="Votes"
         tools:layout="@layout/fragment_votes">
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_friends"
+        android:name="com.example.pawsitiveproject.FriendsFragment"
+        android:label="Friends"
+        tools:layout="@layout/fragment_friends">
 
     </fragment>
 </navigation>
