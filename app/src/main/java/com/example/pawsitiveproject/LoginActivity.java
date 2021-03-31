@@ -99,14 +99,14 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this, task -> {
             if (task.isSuccessful()) {
                 // Sign in success
-                Log.d("bsr", "signInWithEmail:success");
                 FirebaseUser user = mAuth.getCurrentUser();
                 if(user != null){
                     startActivity(new Intent(LoginActivity.this, MainActivity.class));
                 }
             } else {
                 // Sign in fails, display a message to the user.
-                Log.d("bsr", "signInWithEmail:failure", task.getException());
+                String errorMessage = task.getException().getMessage();
+                et_password.setError(errorMessage);
             }
         });
     }

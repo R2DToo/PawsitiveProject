@@ -114,7 +114,11 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
                 }
             } else {
                 // If sign in fails, display a message to the user.
-                Log.d("bsr", "createUserWithEmail:failure", task.getException());
+                String errorMessage = task.getException().getMessage();
+                errorMessage = errorMessage.substring(errorMessage.indexOf("[") + 1);
+                errorMessage = errorMessage.substring(0, errorMessage.indexOf("]"));
+                errorMessage = errorMessage.trim();
+                et_password.setError(errorMessage);
             }
         });
     }
