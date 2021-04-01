@@ -39,6 +39,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.gson.Gson;
 
 import net.gotev.uploadservice.data.UploadInfo;
 import net.gotev.uploadservice.network.ServerResponse;
@@ -71,6 +72,7 @@ public class UploadFragment extends Fragment {
     private TextView txt_upload_status;
     private String currentPath;
     private String chosenFilePath;
+    private Gson gson;
 
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
@@ -99,7 +101,7 @@ public class UploadFragment extends Fragment {
         btn_upload = view.findViewById(R.id.btn_upload);
         upload_progress_bar = view.findViewById(R.id.upload_progress_bar);
         txt_upload_status = view.findViewById(R.id.upload_status);
-
+        gson = new Gson();
         upload_progress_bar.setVisibility(View.INVISIBLE);
 
         btn_gallery.setOnClickListener(new View.OnClickListener() {
@@ -223,7 +225,7 @@ public class UploadFragment extends Fragment {
     }
 
     private void postNewPicture() {
-        String url = "https://api.thedogapi.com/v1/images/upload?sub_id=" + currentUser.getUid();
+        String url = "https://api.thedogapi.com/v1/images/upload";
         //String url = "https://ptsv2.com/t/pawsitivetesting";
         Log.d("bsr", "url: " + url);
         String response = null;
@@ -232,6 +234,7 @@ public class UploadFragment extends Fragment {
                     .setMethod("POST")
                     .addFileToUpload(chosenFilePath, "file")
                     .addHeader("x-api-key", API_KEY)
+                    .addParameter("sub_id", currentUser.getUid())
                     .setMaxRetries(3);
             imageUploadRequest.subscribe(this.getContext(), this.getViewLifecycleOwner(), new RequestObserverDelegate() {
                     @Override
@@ -246,13 +249,17 @@ public class UploadFragment extends Fragment {
                     public void onSuccess(Context context, UploadInfo uploadInfo, ServerResponse serverResponse) {
                         Log.d("bsr", "Success");
                         Log.d("bsr", serverResponse.getBodyString());
+                        UploadResponse response = gson.fromJson(serverResponse.getBodyString(), UploadResponse.class);
+                        if (response.getApproved() == 1) {
+                            txt_upload_status.setText("Upload Success");
+                        }
                     }
 
                     @Override
                     public void onError(Context context, UploadInfo uploadInfo, Throwable throwable) {
                         Log.d("bsr", "UPLOAD ERROR: " + throwable.getMessage());
-                        txt_upload_status.setText(throwable.getMessage() + " ");
-                        txt_upload_status.setError("Possible reasons may include:\nThe picture does not show a dog clearly\nConnection is bad");
+                        txt_upload_status.setText("Upload Error ");
+                        txt_upload_status.setError("Possible reasons may include:\nThe picture does not show a dog clearly\nConnection is bad\nPicture already exists");
                     }
 
                     @Override
@@ -266,8 +273,7 @@ public class UploadFragment extends Fragment {
                     }
             });
 
-            String reqID = imageUploadRequest.startUpload();
-            Log.d("bsr", "reqID == " + reqID);
+            imageUploadRequest.startUpload();
         } catch (FileNotFoundException fnfe) {
             Log.d("bsr", "FILE ERROR: " + fnfe);
         }

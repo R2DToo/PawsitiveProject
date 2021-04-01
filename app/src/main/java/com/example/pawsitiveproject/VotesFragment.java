@@ -72,7 +72,6 @@ public class VotesFragment extends Fragment {
         String url = "https://api.thedogapi.com/v1/votes?sub_id="+ currentUser.getUid();
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url,
             response -> {
-                Log.d("bsr", String.valueOf(response.length()));
                 for (int i = 0; i < response.length(); i++) {
                     Gson gson = new Gson();
                     JSONObject jsonObject = null;
@@ -84,14 +83,13 @@ public class VotesFragment extends Fragment {
                         Log.e("bsr", "JSON ERROR: " + je);
                     }
                     Vote newVote = gson.fromJson(string, Vote.class);
-                    Log.d("bsr", i + ": vote == " + newVote.toString());
+                    //Log.d("bsr", i + ": vote == " + newVote.toString());
                     if (i == response.length() - 1) {
                         getImageURL(newVote, true);
                     } else {
                         getImageURL(newVote, false);
                     }
                 }
-                Log.d("bsr", "Vote Loop Over");
             },
             error -> {
                 Log.d("bsr", "RESPONSE ERROR: " + error.toString());
@@ -116,7 +114,7 @@ public class VotesFragment extends Fragment {
             RandomImageResponse imageResponse = gson.fromJson(string, RandomImageResponse.class);
             newVote.setImage_url(imageResponse.getUrl());
             all_votes.add(newVote);
-            Log.d("bsr", "Image URL == " + newVote.getImage_url());
+            //Log.d("bsr", "Image URL == " + newVote.getImage_url());
             if (lastVote == true) {
                 sortVotes();
                 voteAdapter.notifyDataSetChanged();
