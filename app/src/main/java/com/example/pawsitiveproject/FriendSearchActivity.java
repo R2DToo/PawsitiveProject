@@ -82,7 +82,7 @@ public class FriendSearchActivity extends AppCompatActivity {
                                 String uid = userSnapshot.getKey();
                                 User newUser = gson.fromJson(userSnapshot.getValue().toString(), User.class);
                                 newUser.setUid(uid);
-                                if (newUser.getEmail().contains(input) && newUser.getEmail() != currentUser.getEmail()) {
+                                if (newUser.getEmail().contains(input) && !newUser.getUid().equals(currentUser.getUid())) {
                                     potential_friends.add(newUser);
                                     friendSearchAdapter.notifyDataSetChanged();
                                 }

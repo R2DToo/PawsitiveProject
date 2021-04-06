@@ -7,7 +7,9 @@ public class User {
 
     public User () {}
 
-    public User(String email) { this.email = email; }
+    public User(String uid) {
+        this.uid = uid;
+    }
 
     public String getEmail() {
         return email;

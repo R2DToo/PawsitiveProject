@@ -105,25 +105,26 @@ public class FriendsFragment extends Fragment {
                 btn_friends_list.setEnabled(true);
                 btn_sent_list.setEnabled(true);
                 btn_received_list.setEnabled(false);
-                mDatabase.child("friend_requests").child(currentUser.getUid()).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                mDatabase.child("friend_requests").child(currentUser.getUid()).addValueEventListener(new ValueEventListener() {
                     @Override
-                    public void onComplete(@NonNull Task<DataSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            user_list.clear();
-                            Log.d("bsr", "Received List cleared. Size == " + user_list.size());
-                            friendAdapter.notifyDataSetChanged();
-                            for (DataSnapshot snapshot : task.getResult().getChildren()) {
-                                String friendUid = snapshot.getKey();
-                                String friendStatus = snapshot.getValue().toString();
-                                if(friendStatus.equals("received")) {
-                                    //Log.d("bsr", "key: " + friendUid + " - value: " + friendStatus);
-                                    getSpecificUser(friendUid, friendStatus);
-                                }
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        user_list.clear();
+                        friendAdapter.notifyDataSetChanged();
+                        for(DataSnapshot requestSnapshot : snapshot.getChildren()) {
+                            String friendUid = requestSnapshot.getKey();
+                            String friendStatus = requestSnapshot.getValue().toString();
+                            if(friendStatus.equals("received")) {
+                                User user = new User(friendUid);
+                                user.setStatus(friendStatus);
+                                user_list.add(user);
+                                friendAdapter.notifyDataSetChanged();
+                                getUserInformation(user);
                             }
-                        } else {
-                            Log.d("bsr", "DB ERROR: " + task.getException());
                         }
                     }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError de) { Log.d("bsr", "DB ERROR: " + de); }
                 });
             }
         });
@@ -133,24 +134,27 @@ public class FriendsFragment extends Fragment {
                 btn_friends_list.setEnabled(true);
                 btn_sent_list.setEnabled(false);
                 btn_received_list.setEnabled(true);
-                mDatabase.child("friend_requests").child(currentUser.getUid()).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                mDatabase.child("friend_requests").child(currentUser.getUid()).addValueEventListener(new ValueEventListener() {
                     @Override
-                    public void onComplete(@NonNull Task<DataSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            user_list.clear();
-                            Log.d("bsr", "Sent List cleared. Size == " + user_list.size());
-                            friendAdapter.notifyDataSetChanged();
-                            for (DataSnapshot snapshot : task.getResult().getChildren()) {
-                                String friendUid = snapshot.getKey();
-                                String friendStatus = snapshot.getValue().toString();
-                                if(friendStatus.equals("sent")) {
-                                    //Log.d("bsr", "key: " + friendUid + " - value: " + friendStatus);
-                                    getSpecificUser(friendUid, friendStatus);
-                                }
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        user_list.clear();
+                        friendAdapter.notifyDataSetChanged();
+                        for(DataSnapshot requestSnapshot : snapshot.getChildren()) {
+                            String friendUid = requestSnapshot.getKey();
+                            String friendStatus = requestSnapshot.getValue().toString();
+                            if(friendStatus.equals("sent")) {
+                                User user = new User(friendUid);
+                                user.setStatus(friendStatus);
+                                user_list.add(user);
+                                friendAdapter.notifyDataSetChanged();
+                                getUserInformation(user);
                             }
-                        } else {
-                            Log.d("bsr", "DB ERROR: " + task.getException());
                         }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError de) {
+                        Log.d("bsr", "DB ERROR: " + de);
                     }
                 });
             }
@@ -158,41 +162,48 @@ public class FriendsFragment extends Fragment {
     }
 
     private void getFriends() {
-        mDatabase.child("friends").child(currentUser.getUid()).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+        mDatabase.child("friends").child(currentUser.getUid()).addValueEventListener(new ValueEventListener() {
             @Override
-            public void onComplete(@NonNull Task<DataSnapshot> task) {
-                if (task.isSuccessful()) {
-                    user_list.clear();
-                    friendAdapter.notifyDataSetChanged();
-                    for (DataSnapshot snapshot : task.getResult().getChildren()) {
-                        String friendUid = snapshot.getKey();
-                        String friendStatus = snapshot.getValue().toString();
-                        if(friendStatus.equals("true")) {
-                            //Log.d("bsr", "key: " + friendUid + " - value: " + friendStatus);
-                            getSpecificUser(friendUid, friendStatus);
-                        }
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                user_list.clear();
+                friendAdapter.notifyDataSetChanged();
+                for(DataSnapshot requestSnapshot : snapshot.getChildren()) {
+                    String friendUid = requestSnapshot.getKey();
+                    String friendStatus = requestSnapshot.getValue().toString();
+                    if(friendStatus.equals("true")) {
+                        User user = new User(friendUid);
+                        user.setStatus(friendStatus);
+                        user_list.add(user);
+                        friendAdapter.notifyDataSetChanged();
+                        getUserInformation(user);
                     }
-                } else {
-                    Log.d("bsr", "DB ERROR: " + task.getException());
                 }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError de) {
+                Log.d("bsr", "DB ERROR: " + de);
             }
         });
     }
 
-    private void getSpecificUser(String uid, String status) {
-        mDatabase.child("users").child(uid).addValueEventListener(new ValueEventListener() {
+    private void getUserInformation(User user) {
+        mDatabase.child("users").child(user.getUid()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.exists() && snapshot.getValue() != null) {
-                    Gson gson = new Gson();
-                    for (DataSnapshot userSnapshot: snapshot.getChildren()) {
-                        User specificUser = new User(userSnapshot.getValue().toString());
-                        specificUser.setUid(uid);
-                        specificUser.setStatus(status);
-                        Log.d("bsr", specificUser.toString());
-                        user_list.add(specificUser);
-                        friendAdapter.notifyDataSetChanged();
+                try {
+                    int userIndex = user_list.indexOf(user);
+                    if (snapshot.exists() && snapshot.getValue() != null) {
+                        for (DataSnapshot userSnapshot: snapshot.getChildren()) {
+                            String userEmail = userSnapshot.getValue().toString();
+                            user.setEmail(userEmail);
+                            user_list.set(userIndex, user);
+                            friendAdapter.notifyDataSetChanged();
+                        }
                     }
+                } catch (Exception e) {
+                    //This try catch is vital
+                    Log.d("bsr", "USER INFO ERROR: " + e);
                 }
             }
 
