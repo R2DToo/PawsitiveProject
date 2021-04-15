@@ -20,6 +20,8 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -38,6 +40,7 @@ public class FriendSearchActivity extends AppCompatActivity {
 
     private ArrayList<User> potential_friends;
     private FriendSearchAdapter friendSearchAdapter;
+    private ArrayList<String> excluded_friends;
 
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
@@ -58,6 +61,7 @@ public class FriendSearchActivity extends AppCompatActivity {
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
         potential_friends = new ArrayList<User>();
+        excluded_friends = new ArrayList<String>();
         friendSearchAdapter = new FriendSearchAdapter(this, R.layout.friend_search_item, potential_friends);
         potential_friends_list.setAdapter(friendSearchAdapter);
 
@@ -70,31 +74,81 @@ public class FriendSearchActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                potential_friends.clear();
+
                 String input = editable.toString();
 
-                mDatabase.child("users").addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        if (snapshot.exists() && snapshot.getValue() != null) {
-                            Gson gson = new Gson();
-                            for (DataSnapshot userSnapshot: snapshot.getChildren()) {
-                                String uid = userSnapshot.getKey();
-                                User newUser = gson.fromJson(userSnapshot.getValue().toString(), User.class);
-                                newUser.setUid(uid);
-                                if (newUser.getEmail().contains(input) && !newUser.getUid().equals(currentUser.getUid())) {
-                                    potential_friends.add(newUser);
-                                    friendSearchAdapter.notifyDataSetChanged();
-                                }
-                            }
+                getExcludedFriends(input);
+            }
+        });
+    }
+
+    private void getExcludedFriends(String input) {
+        mDatabase.child("friend_requests").child(currentUser.getUid()).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DataSnapshot> task) {
+                excluded_friends.clear();
+                potential_friends.clear();
+                friendSearchAdapter.notifyDataSetChanged();
+                if(task.isSuccessful()) {
+                    DataSnapshot snapshot = task.getResult();
+                    for (DataSnapshot requestSnapshot : snapshot.getChildren()) {
+                        String uid = requestSnapshot.getKey();
+                        excluded_friends.add(uid);
+                    }
+                    getExcludedFriendsToo(input);
+                } else {
+                    Log.d("bsr", "DB ERROR: " + String.valueOf(task.getResult().getValue()));
+                }
+            }
+        });
+    }
+
+    private void getExcludedFriendsToo(String input) {
+        mDatabase.child("friends").child(currentUser.getUid()).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DataSnapshot> task) {
+                if(task.isSuccessful()) {
+                    DataSnapshot snapshot = task.getResult();
+                    for (DataSnapshot requestSnapshot : snapshot.getChildren()) {
+                        String uid = requestSnapshot.getKey();
+                        if(!excluded_friends.contains(uid)) {
+                            excluded_friends.add(uid);
                         }
                     }
+                    getPotentialFriends(input);
+                } else {
+                    Log.d("bsr", "DB ERROR: " + String.valueOf(task.getResult().getValue()));
+                }
+            }
+        });
+    }
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError de) {
-                        Log.d("bsr", "DB ERROR: " + de);
+    private void getPotentialFriends(String input) {
+        mDatabase.child("users").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists() && snapshot.getValue() != null) {
+                    Gson gson = new Gson();
+                    for (DataSnapshot userSnapshot: snapshot.getChildren()) {
+                        String uid = userSnapshot.getKey();
+                        User newUser = gson.fromJson(userSnapshot.getValue().toString(), User.class);
+                        newUser.setUid(uid);
+                        if (newUser.getEmail().contains(input)
+                                && !newUser.getUid().equals(currentUser.getUid())
+                                && !excluded_friends.contains(newUser.getUid())) {
+                            Log.d("bsr", "potential: " + newUser.toString());
+                            potential_friends.add(newUser);
+                            friendSearchAdapter.notifyDataSetChanged();
+                        }
+                        String tester = "abc@gmail.com";
+                        Log.d("bsr", "Tester: " + newUser.getEmail() + " - Input: " + input + " - Contained: " + newUser.getEmail().contains(input));
                     }
-                });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError de) {
+                Log.d("bsr", "DB ERROR: " + de);
             }
         });
     }
@@ -133,6 +187,7 @@ public class FriendSearchActivity extends AppCompatActivity {
                 display_email.setText(user.getEmail());
                 Button btn_send_request = view.findViewById(R.id.friend_btn);
                 btn_send_request.setText("Send Request");
+                btn_send_request.setEnabled(true);
                 btn_send_request.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -142,6 +197,7 @@ public class FriendSearchActivity extends AppCompatActivity {
                         mDatabase.child("friend_requests").child(user.getUid())
                                 .child(currentUser.getUid()).setValue("received");
                         btn_send_request.setEnabled(false);
+                        btn_send_request.setText("Pending...");
                     }
                 });
             }
