@@ -8,6 +8,9 @@ import android.os.Build;
 
 import net.gotev.uploadservice.UploadServiceConfig;
 
+/**
+ * App class used to setup the notification channel for uploading images
+ */
 public class App extends Application {
     private final String notificationID = "PawsitiveChannel";
 

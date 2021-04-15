@@ -1,5 +1,8 @@
 package com.example.pawsitiveproject;
 
+/**
+ * The final, flattened structure for a picture and all its information
+ */
 public class PictureItem extends Object{
     private String id;
     private String url;

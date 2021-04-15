@@ -4,6 +4,9 @@ import android.util.Log;
 
 import java.util.List;
 
+/**
+ * Used by gson to parse the response of a random picture request
+ */
 public class RandomImageResponse extends Object {
     private String id;
     private String url;

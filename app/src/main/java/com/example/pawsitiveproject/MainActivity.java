@@ -62,6 +62,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+/**
+ * Creates the navigation and toolbar
+ */
 public class MainActivity extends AppCompatActivity {
     private final String TAG = "api-req";
     private RequestQueue mReqQueue;

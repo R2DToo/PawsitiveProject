@@ -33,6 +33,9 @@ import com.google.gson.Gson;
 
 import java.util.ArrayList;
 
+/**
+ * Search for new friends
+ */
 public class FriendSearchActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private EditText txt_search_friend;
@@ -82,6 +85,11 @@ public class FriendSearchActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Grabs any user that currently has a friend request with the current user and adds them to an excluded list.
+     * This is to prevent adding the same person multiple times.
+     * @param input
+     */
     private void getExcludedFriends(String input) {
         mDatabase.child("friend_requests").child(currentUser.getUid()).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
             @Override
@@ -103,6 +111,11 @@ public class FriendSearchActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Grabs any friends of the current user and adds them to the excluded list.
+     * This is to prevent adding the same person multiple times.
+     * @param input
+     */
     private void getExcludedFriendsToo(String input) {
         mDatabase.child("friends").child(currentUser.getUid()).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
             @Override
@@ -123,6 +136,11 @@ public class FriendSearchActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Adds users to the list on screen if the input matches their email.
+     * Users on the current users friend list or friend request list will not be displayed.
+     * @param input
+     */
     private void getPotentialFriends(String input) {
         mDatabase.child("users").addValueEventListener(new ValueEventListener() {
             @Override

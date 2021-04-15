@@ -36,6 +36,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This fragment displays the swipe-able dog pictures
+ */
 public class HomeFragment extends Fragment {
     private final String API_KEY = "2fc6b7da-314a-4327-9888-0fd52d813f7f";
     private final String TAG = "api-req";
@@ -43,10 +46,7 @@ public class HomeFragment extends Fragment {
     private ArrayList<PictureItem> image_queue;
     private SwipeAdapter swipeAdapter;
     private SwipeFlingAdapterView flingContainer;
-    private SharedPreferences sharedPreferences;
     private View view;
-
-    private Boolean firstPicture = true;
 
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;

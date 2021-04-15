@@ -17,6 +17,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 
+/**
+ * Assorted file utility methods. Mainly used to get the path of a picture during upload.
+ */
 public class MyFileUtils {
     private static Uri contentUri = null;
 

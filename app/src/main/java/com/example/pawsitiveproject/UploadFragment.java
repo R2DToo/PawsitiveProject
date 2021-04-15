@@ -59,6 +59,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Handles taking pictures with camera or choosing from gallery to be uploaded to the dog api
+ */
 public class UploadFragment extends Fragment {
     public static final int CAMERA_PERM_CODE = 101;
     public static final int CAMERA_REQUEST_CODE = 102;

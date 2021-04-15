@@ -6,6 +6,9 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 
+/**
+ * Singleton pattern to handle the volley request queue
+ */
 public class SharedRequestQueue {
     private final String TAG = "api-req";
 

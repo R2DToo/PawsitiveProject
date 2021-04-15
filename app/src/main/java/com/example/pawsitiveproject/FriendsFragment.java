@@ -38,6 +38,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+/**
+ * Display friends and friend requests
+ */
 public class FriendsFragment extends Fragment {
     private Button btn_friends_list, btn_received_list, btn_sent_list;
     private ImageButton start_friend_search;

@@ -2,6 +2,9 @@ package com.example.pawsitiveproject;
 
 import android.util.Log;
 
+/**
+ * This class holds information on the breed from an api requested picture.
+ */
 public class Breed extends Object {
     private String bred_for;
     private String breed_group;
@@ -17,14 +20,6 @@ public class Breed extends Object {
         this.life_span = life_span;
         this.name = name;
         this.temperament = temperament;
-
-        Log.d("bsr", "Constructing new Breed{" +
-                "bred_for='" + bred_for + '\'' +
-                ", breed_group='" + breed_group + '\'' +
-                ", life_span='" + life_span + '\'' +
-                ", name='" + name + '\'' +
-                ", temperament='" + temperament + '\'' +
-                '}');
     }
 
     public String getBred_for() {

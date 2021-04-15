@@ -22,6 +22,9 @@ import com.google.firebase.auth.FirebaseUser;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Handles the firebase login activity
+ */
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
     private EditText et_email, et_password;
 

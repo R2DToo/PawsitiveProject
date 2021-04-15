@@ -8,6 +8,9 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
+/**
+ * Used by gson to parse the votes response. Implements Comparable to enable sorting by date
+ */
 public class Vote extends Object implements Comparable<Vote> {
     private String country_code;
     private String created_at;

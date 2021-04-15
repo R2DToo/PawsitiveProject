@@ -38,6 +38,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Displays all the votes created by the current user
+ */
 public class VotesFragment extends Fragment {
     private final String API_KEY = "2fc6b7da-314a-4327-9888-0fd52d813f7f";
     private final String TAG = "api-req";

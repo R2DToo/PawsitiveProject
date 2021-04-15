@@ -1,5 +1,8 @@
 package com.example.pawsitiveproject;
 
+/**
+ * Used by gson to parse the response from uploading a picture
+ */
 public class UploadResponse extends Object {
     private String id;
     private String url;

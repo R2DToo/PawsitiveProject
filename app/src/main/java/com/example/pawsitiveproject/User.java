@@ -1,5 +1,8 @@
 package com.example.pawsitiveproject;
 
+/**
+ * Holds information on a user
+ */
 public class User {
     private String email;
     private String uid;

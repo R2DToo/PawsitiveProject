@@ -24,6 +24,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Handles the firebase sign-up activity
+ */
 public class SignupActivity extends AppCompatActivity implements View.OnClickListener {
     EditText et_email, et_password, et_confirm_password;
 
