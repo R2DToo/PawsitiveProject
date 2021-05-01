@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/nav_upload"
-        android:name="com.example.pawsitiveproject.UploadFragment"
+        android:name="com.pawsitive.pawsitiveproject.UploadFragment"
         android:label="Upload"
         tools:layout="@layout/fragment_upload">
 
@@ -15,7 +15,7 @@
 
     <fragment
         android:id="@+id/nav_home"
-        android:name="com.example.pawsitiveproject.HomeFragment"
+        android:name="com.pawsitive.pawsitiveproject.HomeFragment"
         android:label="Home"
         tools:layout="@layout/fragment_home">
         <action
@@ -35,7 +35,7 @@
 
     <fragment
         android:id="@id/nav_votes"
-        android:name="com.example.pawsitiveproject.VotesFragment"
+        android:name="com.pawsitive.pawsitiveproject.VotesFragment"
         android:label="Votes"
         tools:layout="@layout/fragment_votes">
 
@@ -43,7 +43,7 @@
 
     <fragment
         android:id="@+id/nav_friends"
-        android:name="com.example.pawsitiveproject.FriendsFragment"
+        android:name="com.pawsitive.pawsitiveproject.FriendsFragment"
         android:label="Friends"
         tools:layout="@layout/fragment_friends">
 

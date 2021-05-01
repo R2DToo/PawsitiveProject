@@ -1,4 +1,4 @@
-package com.example.pawsitiveproject;
+package com.pawsitive.pawsitiveproject;
 
 import android.util.Log;
 

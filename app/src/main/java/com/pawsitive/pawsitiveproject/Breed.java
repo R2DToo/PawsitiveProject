@@ -1,6 +1,4 @@
-package com.example.pawsitiveproject;
-
-import android.util.Log;
+package com.pawsitive.pawsitiveproject;
 
 /**
  * This class holds information on the breed from an api requested picture.

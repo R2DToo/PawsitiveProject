@@ -1,4 +1,4 @@
-package com.example.pawsitiveproject;
+package com.pawsitive.pawsitiveproject;
 
 /**
  * Used by gson to parse the response from uploading a picture

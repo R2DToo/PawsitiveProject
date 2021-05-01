@@ -1,4 +1,4 @@
-package com.example.pawsitiveproject;
+package com.pawsitive.pawsitiveproject;
 
 /**
  * Holds information on a user

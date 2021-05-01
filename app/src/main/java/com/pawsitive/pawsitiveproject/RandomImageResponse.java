@@ -1,6 +1,4 @@
-package com.example.pawsitiveproject;
-
-import android.util.Log;
+package com.pawsitive.pawsitiveproject;
 
 import java.util.List;
 

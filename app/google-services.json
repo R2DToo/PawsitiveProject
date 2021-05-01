@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:46966357185:android:848ef022b1c90a95482840",
         "android_client_info": {
-          "package_name": "com.example.pawsitiveproject"
+          "package_name": "com.pawsitive.pawsitiveproject"
         }
       },
       "oauth_client": [
@@ -17,7 +17,7 @@
           "client_id": "46966357185-2gfq8cr1madfkfp45np98ms4plaumcul.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.pawsitiveproject",
+            "package_name": "com.pawsitive.pawsitiveproject",
             "certificate_hash": "14700121d4da41bc2dd1a6dbe690a670f8a014a5"
           }
         },
